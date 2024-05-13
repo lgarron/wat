@@ -3,7 +3,7 @@ use std::{
     process::{Command, Stdio},
     str::from_utf8,
     sync::Arc,
-    thread::{self, sleep},
+    thread::{self},
     time::Duration,
 };
 
@@ -99,12 +99,24 @@ fn main() {
                 disk_space_free(progress_bar);
             })
         },
-        // Runs last
+    ];
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    // Runs last
+    let handles = [
         {
             let progress_bar = create_progress_bar("networkQuality");
-            sleep(Duration::from_secs(8));
             thread::spawn(move || {
                 network_quality(progress_bar);
+            })
+        },
+        {
+            let progress_bar = create_progress_bar("Pythagoras.tlb iperf3");
+            thread::spawn(move || {
+                pythagoras_tlb_iperf3(progress_bar);
             })
         },
     ];
@@ -135,6 +147,41 @@ fn network_quality(progress_bar: ProgressBar) {
             Ok(true)
         })
         .unwrap();
+}
+
+fn pythagoras_tlb_iperf3(progress_bar: ProgressBar) {
+    let server_ssh_process: Result<std::process::Child, std::io::Error> = Command::new("ssh")
+        .args(["Pythagoras.tlb", "iperf3 --server"])
+        // .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn();
+
+    // progress_bar.set_prefix("starting");
+    let child = Command::new("faketty")
+        .args(["iperf3", "--client", "Pythagoras.tlb"])
+        // .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn();
+
+    let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
+    line_reader
+        .for_each(|line| {
+            let line = from_utf8(line).unwrap().trim().to_owned();
+            if line.is_empty() {
+                return Ok(true);
+            }
+            if line == "iperf Done." {
+                return Ok(true);
+            }
+            progress_bar.set_message(line);
+            stdout().flush().unwrap();
+            Ok(true)
+        })
+        .unwrap();
+
+    server_ssh_process.unwrap().kill().unwrap();
 }
 
 fn ping(progress_bar: ProgressBar, host: &str) {
