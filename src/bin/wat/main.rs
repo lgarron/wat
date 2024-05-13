@@ -99,14 +99,14 @@ fn main() {
                 disk_space_free(progress_bar);
             })
         },
-    ];
+        // ];
 
-    for handle in handles {
-        handle.join().unwrap();
-    }
+        // for handle in handles {
+        //     handle.join().unwrap();
+        // }
 
-    // Runs last
-    let handles = [
+        // // Runs last
+        // let handles = [
         {
             let progress_bar = create_progress_bar("networkQuality");
             thread::spawn(move || {
