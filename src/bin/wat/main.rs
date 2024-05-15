@@ -3,14 +3,19 @@ use std::{
     process::{Command, Stdio},
     str::from_utf8,
     sync::Arc,
-    thread::{self},
+    thread::{self, JoinHandle},
     time::Duration,
 };
 
+mod options;
+
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use linereader::LineReader;
+use options::get_options;
 
 fn main() {
+    let wat_args = get_options();
+
     let multi_progress = Arc::new(MultiProgress::new());
 
     let create_progress_bar = move |prefix: &str| -> ProgressBar {
@@ -26,101 +31,68 @@ fn main() {
         progress_bar
     };
 
-    let handles = [
-        {
-            let progress_bar = create_progress_bar("🔈 audio output");
-            thread::spawn(move || {
-                audio_output(progress_bar);
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("Pythagoras.tlb locked?");
-            thread::spawn(move || {
-                pythagoras_tlb_locked(progress_bar);
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("Pythagoras-ts.wyvern-climb.ts.net locked?");
-            thread::spawn(move || {
-                pythagoras_ts_tailscale_locked(progress_bar);
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("tailscale");
-            thread::spawn(move || {
-                tailscale(progress_bar);
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("ping 1.1.1.1");
-            thread::spawn(move || {
-                ping(progress_bar, "1.1.1.1");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("ping 8.8.8.8");
-            thread::spawn(move || {
-                ping(progress_bar, "8.8.8.8");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("ping mensura.cdn-apple.com");
-            thread::spawn(move || {
-                ping(progress_bar, "mensura.cdn-apple.com");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("ping Pythagoras.tlb");
-            thread::spawn(move || {
-                ping(progress_bar, "Pythagoras.tlb");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("ping Pythagoras-ts.wyvern-climb.ts.net");
-            thread::spawn(move || {
-                ping(progress_bar, "Pythagoras-ts.wyvern-climb.ts.net");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("sshping Pythagoras.tlb");
-            thread::spawn(move || {
-                sshping(progress_bar, "Pythagoras.tlb");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("sshping Pythagoras-ts.wyvern-climb.ts.net");
-            thread::spawn(move || {
-                sshping(progress_bar, "Pythagoras-ts.wyvern-climb.ts.net");
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("disk space free");
-            thread::spawn(move || {
-                disk_space_free(progress_bar);
-            })
-        },
-        // ];
+    let mut handles: Vec<JoinHandle<()>> = vec![];
 
-        // for handle in handles {
-        //     handle.join().unwrap();
-        // }
+    macro_rules! spawn {
+        ($prefix:expr, $fn:expr) => {
+            handles.push({
+                let progress_bar = create_progress_bar($prefix);
+                thread::spawn(move || {
+                    $fn(progress_bar);
+                })
+            });
+        };
+    }
 
-        // // Runs last
-        // let handles = [
-        {
-            let progress_bar = create_progress_bar("networkQuality");
-            thread::spawn(move || {
-                network_quality(progress_bar);
-            })
-        },
-        {
-            let progress_bar = create_progress_bar("Pythagoras.tlb iperf3");
-            thread::spawn(move || {
-                pythagoras_tlb_iperf3(progress_bar);
-            })
-        },
-    ];
+    macro_rules! spawn_1arg {
+        ($prefix:expr, $fn:expr, $arg:expr) => {
+            handles.push({
+                let progress_bar = create_progress_bar($prefix);
+                thread::spawn(move || {
+                    $fn(progress_bar, $arg);
+                })
+            });
+        };
+    }
 
+    if wat_args.include_system() {
+        spawn!("🔈 audio output", audio_output);
+        spawn!("disk space free", disk_space_free);
+        spawn!("tailscale", tailscale);
+    }
+    if wat_args.include_misc() {
+        spawn!("Pythagoras.tlb locked?", pythagoras_tlb_locked);
+        spawn!(
+            "Pythagoras-ts.wyvern-climb.ts.net locked?",
+            pythagoras_ts_tailscale_locked
+        );
+    }
+    if wat_args.include_ping() {
+        spawn_1arg!("ping 1.1.1.1", ping, "1.1.1.1");
+        spawn_1arg!("ping 8.8.8.8", ping, "8.8.8.8");
+        spawn_1arg!("ping mensura.cdn-apple.com", ping, "mensura.cdn-apple.com");
+        spawn_1arg!("ping Pythagoras.tlb", ping, "Pythagoras.tlb");
+        spawn_1arg!(
+            "ping Pythagoras-ts.wyvern-climb.ts.net",
+            ping,
+            "Pythagoras-ts.wyvern-climb.ts.net"
+        );
+    }
+
+    if wat_args.include_sshping() {
+        spawn_1arg!("sshping Pythagoras.tlb", sshping, "Pythagoras.tlb");
+        spawn_1arg!(
+            "sshping Pythagoras-ts.wyvern-climb.ts.net",
+            sshping,
+            "Pythagoras-ts.wyvern-climb.ts.net"
+        );
+    }
+    if wat_args.include_network_quality() {
+        spawn!("networkQuality", network_quality);
+    }
+    if wat_args.include_iperf3() {
+        spawn!("Pythagoras.tlb iperf3", pythagoras_tlb_iperf3);
+    }
     for handle in handles {
         handle.join().unwrap();
     }
@@ -260,7 +232,7 @@ fn audio_output(progress_bar: ProgressBar) {
 
 fn sshping(progress_bar: ProgressBar, host: &str) {
     let child = Command::new("/Users/lgarron/Code/git/github.com/spook/sshping/bin/sshping")
-        .args(["-H", host])
+        .args(["-t", "10", "--time", host])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
