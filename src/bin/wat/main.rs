@@ -240,7 +240,7 @@ fn audio_output(progress_bar: ProgressBar) {
 
 fn sshping(progress_bar: ProgressBar, host: &str) {
     let child = Command::new("/Users/lgarron/Code/git/github.com/spook/sshping/bin/sshping")
-        .args(["-t", "10", "--time", host])
+        .args(["-H", "--time", "10", host])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
