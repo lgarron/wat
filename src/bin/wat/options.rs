@@ -4,13 +4,14 @@ use clap_complete::{Generator, Shell};
 use std::io::stdout;
 use std::process::exit;
 
-/// twsearch — solve every puzzle.
+/// wat — tell me what's up
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[clap(name = "wat")]
 pub struct WatArgs {
+    /// Include a default selection of checks.
     #[clap(long)]
-    pub all: bool,
+    pub default: bool,
 
     #[clap(long)]
     pub system: bool,
@@ -21,11 +22,15 @@ pub struct WatArgs {
     #[clap(long)]
     pub sshping: bool,
 
+    #[clap(long = "networkQuality")]
+    pub network_quality: bool,
+
     #[clap(long)]
     pub iperf3: bool,
 
-    #[clap(long = "networkQuality")]
-    pub network_quality: bool,
+    /// Not included by default.
+    #[clap(long)]
+    pub iperf3_tailscale: bool,
 
     /// Print completions for the given shell (instead of generating any icons).
     /// These can be loaded/stored permanently (e.g. when using Homebrew), but they can also be sourced directly, e.g.:
@@ -38,25 +43,34 @@ pub struct WatArgs {
 
 impl WatArgs {
     pub fn include_misc(&self) -> bool {
-        self.all
+        self.default
     }
     pub fn include_ping(&self) -> bool {
-        self.all || self.ping
+        self.default || self.ping
     }
     pub fn include_system(&self) -> bool {
-        self.all || self.system
+        self.default || self.system
     }
     pub fn include_sshping(&self) -> bool {
-        self.all || self.sshping
+        self.default || self.sshping
     }
     pub fn include_network_quality(&self) -> bool {
-        self.all || self.network_quality
+        self.default || self.network_quality
     }
     pub fn include_iperf3(&self) -> bool {
-        self.all || self.iperf3
+        self.default || self.iperf3
     }
-    fn include_any(&self) -> bool {
-        self.all || self.ping || self.system || self.sshping || self.network_quality || self.iperf3
+    pub fn include_iperf3_tailscale(&self) -> bool {
+        self.iperf3_tailscale
+    }
+    fn was_any_non_default_specified(&self) -> bool {
+        self.include_misc()
+            || self.include_ping()
+            || self.include_system()
+            || self.include_sshping()
+            || self.include_network_quality()
+            || self.include_iperf3()
+            || self.include_iperf3_tailscale()
     }
 }
 
@@ -73,14 +87,14 @@ pub fn get_options() -> WatArgs {
         exit(0);
     }
 
-    if !args.include_any() {
+    if !args.was_any_non_default_specified() {
         eprintln!(
             "
 Defaulting to: --all
 For help, pass: --help
 "
         );
-        args.all = true;
+        args.default = true;
     }
 
     args

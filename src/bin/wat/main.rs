@@ -91,7 +91,14 @@ fn main() {
         spawn!("networkQuality", network_quality);
     }
     if wat_args.include_iperf3() {
-        spawn!("Pythagoras.tlb iperf3", pythagoras_tlb_iperf3);
+        spawn_1arg!("Pythagoras.tlb iperf3", iperf3, "Pythagoras.tlb");
+    }
+    if wat_args.include_iperf3_tailscale() {
+        spawn_1arg!(
+            "Pythagoras-ts.wyvern-climb.ts.net iperf3",
+            iperf3,
+            "Pythagoras-ts.wyvern-climb.ts.net"
+        );
     }
     for handle in handles {
         handle.join().unwrap();
@@ -121,9 +128,9 @@ fn network_quality(progress_bar: ProgressBar) {
         .unwrap();
 }
 
-fn pythagoras_tlb_iperf3(progress_bar: ProgressBar) {
+fn iperf3(progress_bar: ProgressBar, host: &str) {
     let server_ssh_process: Result<std::process::Child, std::io::Error> = Command::new("ssh")
-        .args(["Pythagoras.tlb", "iperf3 --server"])
+        .args([host, "iperf3 --server"])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -131,7 +138,7 @@ fn pythagoras_tlb_iperf3(progress_bar: ProgressBar) {
 
     // progress_bar.set_prefix("starting");
     let child = Command::new("faketty")
-        .args(["iperf3", "--client", "Pythagoras.tlb"])
+        .args(["iperf3", "--client", host])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
