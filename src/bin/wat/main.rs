@@ -56,8 +56,9 @@ fn main() {
     }
 
     if wat_args.include_system() {
-        spawn!("🔈 audio output", audio_output);
+        spawn!("Charging", charging);
         spawn!("disk space free", disk_space_free);
+        spawn!("🔈 audio output", audio_output);
         spawn!("tailscale", tailscale);
     }
     if wat_args.include_misc() {
@@ -263,6 +264,26 @@ fn tailscale(progress_bar: ProgressBar) {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();
+
+    let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
+    line_reader
+        .for_each(|line| {
+            let line = from_utf8(line).unwrap().to_owned();
+            progress_bar.set_message(line);
+            stdout().flush().unwrap();
+            Ok(true)
+        })
+        .unwrap();
+}
+
+fn charging(progress_bar: ProgressBar) {
+    let child = Command::new(
+        "/Users/lgarron/Code/git/github.com/lgarron/scripts/system/macos-charging-watts.fish",
+    )
+    // .stdin(Stdio::piped())
+    .stdout(Stdio::piped())
+    .stderr(Stdio::piped())
+    .spawn();
 
     let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
     line_reader
