@@ -67,10 +67,15 @@ fn main() {
         spawn!("tailscale", tailscale);
     }
     if wat_args.include_misc() {
-        spawn!("Pythagoras.tlb locked?", pythagoras_tlb_locked);
-        spawn!(
+        spawn_1arg!(
+            "Pythagoras.tlb locked?",
+            ssh_is_macos_screen_locked,
+            "Pythagoras.tlb"
+        );
+        spawn_1arg!(
             "Pythagoras-ts.wyvern-climb.ts.net locked?",
-            pythagoras_ts_tailscale_locked
+            ssh_is_macos_screen_locked,
+            "Pythagoras-ts.wyvern-climb.ts.net"
         );
     }
     if wat_args.include_ping() {
@@ -192,9 +197,9 @@ fn ping(progress_bar: ProgressBar, host: &str) {
         .unwrap();
 }
 
-fn pythagoras_tlb_locked(progress_bar: ProgressBar) {
+fn ssh_is_macos_screen_locked(progress_bar: ProgressBar, host: &str) {
     let child = Command::new("ssh")
-        .args(["Pythagoras.tlb", "\"is-macos-screen-locked\""])
+        .args([host, "\"is-macos-screen-locked\""])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -203,27 +208,13 @@ fn pythagoras_tlb_locked(progress_bar: ProgressBar) {
     let output = child.unwrap().wait_with_output().unwrap();
 
     let output = String::from_utf8(output.stdout).unwrap();
-    let output = output.trim().to_owned();
-    // println!("---{}===", output);
-    progress_bar.set_message(output);
-}
-
-fn pythagoras_ts_tailscale_locked(progress_bar: ProgressBar) {
-    let child = Command::new("ssh")
-        .args([
-            "Pythagoras-ts.wyvern-climb.ts.net",
-            "\"is-macos-screen-locked\"",
-        ])
-        // .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn();
-
-    let output = child.unwrap().wait_with_output().unwrap();
-
-    let output = String::from_utf8(output.stdout).unwrap();
-    let output = output.trim().to_owned();
-    // println!("---{}===", output);
+    let output = if output.contains("unlocked") {
+        "🚫 unlocked"
+    } else if output.contains("locked") {
+        "🔒 locked"
+    } else {
+        "—"
+    };
     progress_bar.set_message(output);
 }
 
