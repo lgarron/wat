@@ -62,6 +62,8 @@ fn main() {
         spawn!("🔥 thermal pressure", thermal_pressure);
         spawn!("💾 disk space free", disk_space_free);
         spawn!("🔈 audio output", audio_output);
+        spawn_1arg!("IP address (en0 — WiFi)", ip_address, "en0");
+        spawn_1arg!("IP address (en17 — Ethernet)", ip_address, "en17");
         spawn!("tailscale", tailscale);
     }
     if wat_args.include_misc() {
@@ -274,6 +276,22 @@ fn tailscale(progress_bar: ProgressBar) {
         "🚫 down"
     });
     stdout().flush().unwrap();
+}
+
+fn ip_address(progress_bar: ProgressBar, interface: &str) {
+    let child = Command::new("ipconfig")
+        .args(["getifaddr", interface])
+        // .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn();
+
+    let output = child.unwrap().wait_with_output().unwrap();
+
+    let output = String::from_utf8(output.stdout).unwrap();
+    let output = output.trim().to_owned();
+    // println!("---{}===", output);
+    progress_bar.set_message(output);
 }
 
 fn charging(progress_bar: ProgressBar) {
