@@ -1,3 +1,5 @@
+// TODO: this code is pretty "wat" in itself. Once I understand the full structure of what I need, I should refactor it.
+
 use std::{
     io::{stdout, Write},
     process::{Command, Stdio},
