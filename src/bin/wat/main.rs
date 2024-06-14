@@ -102,6 +102,11 @@ fn main() {
             "Pythagoras-ts.wyvern-climb.ts.net"
         );
     }
+
+    for handle in handles.drain(1..) {
+        handle.join().unwrap();
+    }
+
     if wat_args.include_network_quality() {
         spawn!("networkQuality", network_quality);
     }
