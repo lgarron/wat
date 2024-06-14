@@ -335,7 +335,10 @@ fn thermal_pressure(progress_bar: ProgressBar) {
     let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
     line_reader
         .for_each(|line| {
-            let line = from_utf8(line).unwrap().to_owned();
+            let mut line = from_utf8(line).unwrap().to_owned();
+            if let Some(prefix_stripped_line) = line.strip_prefix("Current pressure level: ") {
+                line = prefix_stripped_line.to_owned()
+            }
             progress_bar.set_message(line);
             stdout().flush().unwrap();
             Ok(true)
