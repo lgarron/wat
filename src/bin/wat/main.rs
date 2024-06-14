@@ -57,7 +57,8 @@ fn main() {
 
     if wat_args.include_system() {
         spawn!("Charging", charging);
-        spawn!("disk space free", disk_space_free);
+        spawn!("🔥 thermal pressure", thermal_pressure);
+        spawn!("💾 disk space free", disk_space_free);
         spawn!("🔈 audio output", audio_output);
         spawn!("tailscale", tailscale);
     }
@@ -318,6 +319,24 @@ fn disk_space_free(progress_bar: ProgressBar) {
             progress_bar.set_message(columns[3].clone());
             stdout().flush().unwrap();
             Ok(false)
+        })
+        .unwrap();
+}
+
+fn thermal_pressure(progress_bar: ProgressBar) {
+    let child = Command::new("thermal-pressure")
+        // .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn();
+
+    let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
+    line_reader
+        .for_each(|line| {
+            let line = from_utf8(line).unwrap().to_owned();
+            progress_bar.set_message(line);
+            stdout().flush().unwrap();
+            Ok(true)
         })
         .unwrap();
 }
