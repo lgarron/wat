@@ -266,17 +266,14 @@ fn tailscale(progress_bar: ProgressBar) {
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn();
+        .status();
 
-    let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
-    line_reader
-        .for_each(|line| {
-            let line = from_utf8(line).unwrap().to_owned();
-            progress_bar.set_message(line);
-            stdout().flush().unwrap();
-            Ok(true)
-        })
-        .unwrap();
+    progress_bar.set_message(if child.unwrap().code() == Some(0) {
+        "↔️ up"
+    } else {
+        "🚫 down"
+    });
+    stdout().flush().unwrap();
 }
 
 fn charging(progress_bar: ProgressBar) {
