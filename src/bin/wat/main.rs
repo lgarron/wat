@@ -103,7 +103,7 @@ fn main() {
         );
     }
 
-    for handle in handles.drain(1..) {
+    for handle in handles.drain(0..) {
         handle.join().unwrap();
     }
 
