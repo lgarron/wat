@@ -1,6 +1,6 @@
 // TODO: this code is pretty "wat" in itself. Once I understand the full structure of what I need, I should refactor it.
 
-use colored::{Colorize, CustomColor};
+use colored::{ColoredString, Colorize, CustomColor};
 use std::{
     io::{stdout, Write},
     process::{Command, Stdio},
@@ -382,9 +382,21 @@ fn thermal_pressure(progress_bar: ProgressBar) {
             if let Some(prefix_stripped_line) = line.strip_prefix("Current pressure level: ") {
                 line = prefix_stripped_line.to_owned()
             }
-            progress_bar.set_message(line);
+            progress_bar.set_message(
+                auto_color_good_or_bad(line.trim(), "Nominal", "🔥 ")
+                    .to_string()
+                    .to_owned(),
+            );
             stdout().flush().unwrap();
             Ok(true)
         })
         .unwrap();
+}
+
+fn auto_color_good_or_bad(s: &str, good_string: &str, bad_prefix: &str) -> ColoredString {
+    if s == good_string {
+        s.green()
+    } else {
+        format!("{}{}", bad_prefix, s).red()
+    }
 }
