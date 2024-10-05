@@ -1,5 +1,6 @@
 // TODO: this code is pretty "wat" in itself. Once I understand the full structure of what I need, I should refactor it.
 
+use colored::{Colorize, CustomColor};
 use std::{
     io::{stdout, Write},
     process::{Command, Stdio},
@@ -14,6 +15,7 @@ mod options;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use linereader::LineReader;
 use options::get_options;
+use regex::Regex;
 
 fn main() {
     let wat_args = get_options();
@@ -337,7 +339,29 @@ fn disk_space_free(progress_bar: ProgressBar) {
             let line = from_utf8(line).unwrap().to_owned();
             // TODO: Why can't this be a `Vec<&str>`?
             let columns: Vec<String> = line.split_whitespace().map(|s| s.to_owned()).collect();
-            progress_bar.set_message(columns[3].clone());
+
+            let mut msg_string = columns[3].clone();
+            // TODO: unclear if `Ki` is actually possible in the output?
+            let re = Regex::new(r"([0-9]+)(Ki|Mi|Gi|Ti)").unwrap();
+            if let Some(captures) = re.captures(&msg_string) {
+                let (_, [num_gi_str, unit]) = captures.extract();
+                let num_gi: usize = num_gi_str.parse().unwrap();
+                let msg_string_spaced = format!("{} {}", num_gi_str, unit);
+                let colored_msg = if num_gi < 20 || unit == "Mi" || unit == "Ki" {
+                    format!("🚨 {}", msg_string_spaced).red()
+                } else if num_gi < 50 {
+                    format!("⚠️ {}", msg_string_spaced).custom_color(CustomColor::new(255, 127, 0))
+                } else if num_gi < 100 {
+                    format!("🤔 {}", msg_string_spaced).yellow()
+                } else if num_gi > 200 {
+                    msg_string_spaced.green()
+                } else {
+                    msg_string_spaced.normal()
+                };
+                msg_string = format!("{}", colored_msg);
+            }
+
+            progress_bar.set_message(msg_string);
             stdout().flush().unwrap();
             Ok(false)
         })

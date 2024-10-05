@@ -8,9 +8,11 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
 clap_complete = "4.5.2"
+colored = "2.1.0"
 futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 linereader = "0.4.0"
+regex = "1.11.0"
 
 [[bin]]
 name = "wat"
