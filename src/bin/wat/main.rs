@@ -312,7 +312,27 @@ fn charging(progress_bar: ProgressBar) {
     let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
     line_reader
         .for_each(|line| {
-            let line = from_utf8(line).unwrap().to_owned();
+            let mut line = from_utf8(line).unwrap().to_owned().trim().to_owned();
+
+            let re = Regex::new(r"([0-9]+) watts").unwrap();
+            if let Some(captures) = re.captures(&line) {
+                let (_, [num_watts]) = captures.extract();
+                let num_watts: usize = num_watts.parse().unwrap();
+                let colored_msg = if num_watts <= 30 {
+                    format!("🚨 {}", line).red()
+                } else if num_watts < 60 {
+                    format!("⚠️ {}", line).custom_color(CustomColor::new(255, 127, 0))
+                } else if num_watts < 96 {
+                    line.normal()
+                } else if num_watts < 140 {
+                    line.blue()
+                } else if num_watts == 140 {
+                    line.green()
+                } else {
+                    line.normal()
+                };
+                line = format!("{}", colored_msg);
+            }
             progress_bar.set_message(line);
             stdout().flush().unwrap();
             Ok(true)
