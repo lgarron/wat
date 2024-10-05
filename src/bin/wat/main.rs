@@ -322,7 +322,7 @@ fn charging(progress_bar: ProgressBar) {
 
 fn disk_space_free(progress_bar: ProgressBar) {
     let child = Command::new("df")
-        .args(["-h"])
+        .args(["-h", "--si"])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -342,12 +342,12 @@ fn disk_space_free(progress_bar: ProgressBar) {
 
             let mut msg_string = columns[3].clone();
             // TODO: unclear if `Ki` is actually possible in the output?
-            let re = Regex::new(r"([0-9]+)(Ki|Mi|Gi|Ti)").unwrap();
+            let re = Regex::new(r"([0-9]+)(K|M|G|T)").unwrap();
             if let Some(captures) = re.captures(&msg_string) {
                 let (_, [num_gi_str, unit]) = captures.extract();
                 let num_gi: usize = num_gi_str.parse().unwrap();
-                let msg_string_spaced = format!("{} {}", num_gi_str, unit);
-                let colored_msg = if num_gi < 20 || unit == "Mi" || unit == "Ki" {
+                let msg_string_spaced = format!("{} {}B", num_gi_str, unit);
+                let colored_msg = if num_gi < 20 || unit == "M" || unit == "K" {
                     format!("🚨 {}", msg_string_spaced).red()
                 } else if num_gi < 50 {
                     format!("⚠️ {}", msg_string_spaced).custom_color(CustomColor::new(255, 127, 0))
