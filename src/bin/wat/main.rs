@@ -376,7 +376,7 @@ fn disk_space_free(progress_bar: ProgressBar) {
                 } else if num_gi > 200 {
                     msg_string_spaced.green()
                 } else {
-                    msg_string_spaced.normal()
+                    msg_string_spaced.bold()
                 };
                 msg_string = format!("{}", colored_msg);
             }
