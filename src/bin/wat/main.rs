@@ -210,7 +210,7 @@ fn ping(progress_bar: ProgressBar, host: &str) {
 
 fn ssh_is_macos_screen_locked(progress_bar: ProgressBar, host: &str) {
     let child = Command::new("ssh")
-        .args([host, "\"is-macos-screen-locked\""])
+        .args(["-o", "ConnectTimeout=5", host, "\"is-macos-screen-locked\""])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
