@@ -302,7 +302,7 @@ fn ipv4_address(progress_bar: ProgressBar, interfaces: &[&str]) {
 
 fn charging(progress_bar: ProgressBar) {
     let child = Command::new(
-        "/Users/lgarron/Code/git/github.com/lgarron/scripts/system/macos-charging-watts.fish",
+        "/Users/lgarron/Code/git/github.com/lgarron/dotfiles/scripts/system/macos-charging-watts.fish",
     )
     // .stdin(Stdio::piped())
     .stdout(Stdio::piped())
