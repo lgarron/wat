@@ -247,18 +247,66 @@ fn audio_output(progress_bar: ProgressBar) {
 
 fn sshping(progress_bar: ProgressBar, host: &str) {
     let child = Command::new("sshping")
-        .args(["-H", "--time", "10", host])
+        .args([
+            "--table-style",
+            "blank",
+            "--echo-timeout",
+            "5",
+            "--ssh-timeout",
+            "5",
+            host,
+        ])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();
 
+    let mut average_time: Option<Duration> = None;
+    let mut connect_time: Option<Duration> = None;
+    let mut std_dev_time: Option<Duration> = None;
+
     let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
     line_reader
         .for_each(|line| {
             let line = from_utf8(line).unwrap().to_owned();
-            progress_bar.set_message(line);
+
+            let re = Regex::new(r"Connect time *([0-9,]+)ns").unwrap();
+            if let Some(captures) = re.captures(&line) {
+                let (_, [nanoseconds_str]) = captures.extract();
+                connect_time = Some(Duration::from_micros(
+                    nanoseconds_str.replace(",", "").parse::<u64>().unwrap() / 1000,
+                ));
+            }
+
+            let re = Regex::new(r"Average *([0-9,]+)ns").unwrap();
+            if let Some(captures) = re.captures(&line) {
+                let (_, [nanoseconds_str]) = captures.extract();
+                average_time = Some(Duration::from_micros(
+                    nanoseconds_str.replace(",", "").parse::<u64>().unwrap() / 1000,
+                ));
+            }
+
+            let re = Regex::new(r"Std deviation *([0-9,]+)ns").unwrap();
+            if let Some(captures) = re.captures(&line) {
+                let (_, [nanoseconds_str]) = captures.extract();
+                std_dev_time = Some(Duration::from_micros(
+                    nanoseconds_str.replace(",", "").parse::<u64>().unwrap() / 1000,
+                ));
+            }
+
+            let mut parts: Vec<String> = vec![];
+            if let Some(average_time) = average_time {
+                parts.push(format!("⌀ {:?}", average_time));
+            }
+            if let Some(std_dev_time) = std_dev_time {
+                parts.push(format!("± 𝜎 {:?}", std_dev_time));
+            }
+            if let Some(connect_time) = connect_time {
+                parts.push(format!("(↔ {:?})", connect_time));
+            }
+            progress_bar.set_message(parts.join(" "));
             stdout().flush().unwrap();
+
             Ok(true)
         })
         .unwrap();
