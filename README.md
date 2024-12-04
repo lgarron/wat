@@ -4,6 +4,13 @@ System is acting weird → `wat` → find out `wat` is going on!
 
 *Extremely* hardcoded to my own setup, but should be easy to hack.
 
+## Installation
+
+```
+cargo install faketty sshping
+brew install --HEAD lgarron/lgarron/wat
+```
+
 ## Example
 
 ```
