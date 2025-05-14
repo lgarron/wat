@@ -1,2 +1,5 @@
 /target
-/Icon
+/Icon
+
+# TODO: Workaround for https://github.com/jj-vcs/jj/issues/6791
+/Icon*
