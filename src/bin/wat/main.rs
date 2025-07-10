@@ -17,6 +17,10 @@ use linereader::LineReader;
 use options::get_options;
 use regex::Regex;
 
+use shadow_rs::shadow;
+
+shadow!(build);
+
 fn main() {
     let wat_args = get_options();
 

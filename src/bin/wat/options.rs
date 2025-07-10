@@ -4,10 +4,12 @@ use clap_complete::{Generator, Shell};
 use std::io::stdout;
 use std::process::exit;
 
+use crate::build::CLAP_LONG_VERSION;
+
 /// wat — tell me what's up
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-#[clap(name = "wat")]
+#[clap(name = "wat", long_version = CLAP_LONG_VERSION)]
 pub struct WatArgs {
     /// Include a default selection of checks.
     #[clap(long)]

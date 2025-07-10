@@ -2,6 +2,7 @@
 name = "lgarron-wat"
 version = "0.1.0"
 edition = "2021"
+build = "./script/build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,6 +14,10 @@ futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 linereader = "0.4.0"
 regex = "1.11.0"
+shadow-rs = { version = "1.2.0", default-features = false }
+
+[build-dependencies]
+shadow-rs = "1.2.0"
 
 [[bin]]
 name = "wat"
