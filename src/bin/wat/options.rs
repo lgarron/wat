@@ -27,6 +27,9 @@ pub struct WatArgs {
     #[clap(long = "networkQuality")]
     pub network_quality: bool,
 
+    #[clap(long = "networkQualitySeparately")]
+    pub network_quality_separately: bool,
+
     #[clap(long)]
     pub iperf3: bool,
 

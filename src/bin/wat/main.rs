@@ -109,8 +109,10 @@ fn main() {
         );
     }
 
-    for handle in handles.drain(0..) {
-        handle.join().unwrap();
+    if wat_args.network_quality_separately {
+        for handle in handles.drain(0..) {
+            handle.join().unwrap();
+        }
     }
 
     if wat_args.include_network_quality() {
