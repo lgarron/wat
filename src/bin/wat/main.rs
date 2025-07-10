@@ -10,11 +10,11 @@ use std::{
     time::Duration,
 };
 
-mod options;
+mod args;
 
+use args::get_options;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use linereader::LineReader;
-use options::get_options;
 use regex::Regex;
 
 use shadow_rs::shadow;
