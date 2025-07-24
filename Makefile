@@ -18,3 +18,10 @@ update-readme-cli-help:
 lint:
 	cargo clippy -- --deny warnings
 	cargo fmt --check
+
+.PHONY: clean
+clean:
+
+.PHONY: reset
+reset: clean
+	rm -rf ./target/
