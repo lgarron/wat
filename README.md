@@ -7,7 +7,6 @@ System is acting weird → `wat` → find out `wat` is going on!
 ## Installation
 
 ```shell
-cargo install faketty sshping
 brew install --HEAD lgarron/lgarron/wat
 ```
 
