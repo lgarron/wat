@@ -10,6 +10,8 @@ System is acting weird → `wat` → find out `wat` is going on!
 brew install --HEAD lgarron/lgarron/wat
 ```
 
+Note that this installs several necessary dependencies: https://github.com/lgarron/dotfiles/blob/main/Formula/wat.rb
+
 ## Example
 
 ```
