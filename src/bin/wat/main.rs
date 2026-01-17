@@ -78,9 +78,9 @@ fn main() {
     }
     if wat_args.include_misc() {
         spawn_1arg!(
-            "Pythagoras.tlb locked?",
+            "Pythagoras.lan locked?",
             ssh_is_macos_screen_locked,
-            "Pythagoras.tlb"
+            "Pythagoras.lan"
         );
         spawn_1arg!(
             "Pythagoras-ts.wyvern-climb.ts.net locked?",
@@ -92,7 +92,7 @@ fn main() {
         spawn_1arg!("ping 1.1.1.1", ping, "1.1.1.1");
         spawn_1arg!("ping 8.8.8.8", ping, "8.8.8.8");
         spawn_1arg!("ping mensura.cdn-apple.com", ping, "mensura.cdn-apple.com");
-        spawn_1arg!("ping Pythagoras.tlb", ping, "Pythagoras.tlb");
+        spawn_1arg!("ping Pythagoras.lan", ping, "Pythagoras.lan");
         spawn_1arg!(
             "ping Pythagoras-ts.wyvern-climb.ts.net",
             ping,
@@ -101,7 +101,7 @@ fn main() {
     }
 
     if wat_args.include_sshping() {
-        spawn_1arg!("sshping Pythagoras.tlb", sshping, "Pythagoras.tlb");
+        spawn_1arg!("sshping Pythagoras.lan", sshping, "Pythagoras.lan");
         spawn_1arg!(
             "sshping Pythagoras-ts.wyvern-climb.ts.net",
             sshping,
@@ -119,7 +119,7 @@ fn main() {
         spawn!("networkQuality", network_quality);
     }
     if wat_args.include_iperf3() {
-        spawn_1arg!("Pythagoras.tlb iperf3", iperf3, "Pythagoras.tlb");
+        spawn_1arg!("Pythagoras.lan iperf3", iperf3, "Pythagoras.lan");
     }
     if wat_args.include_iperf3_tailscale() {
         spawn_1arg!(
