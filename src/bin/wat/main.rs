@@ -356,8 +356,8 @@ fn ipv4_address(progress_bar: ProgressBar, interfaces: &[&str]) {
 
 fn charging(progress_bar: ProgressBar) {
     let child = Command::new(
-        "/Users/lgarron/Code/git/github.com/lgarron/dotfiles/scripts/system/macos-charging-watts.fish",
-    )
+        "/Users/lgarron/Code/git/github.com/lgarron/dotfiles/scripts/system/macos-charging-watts.ts",
+    ).args(["--format", "number"])
     // .stdin(Stdio::piped())
     .stdout(Stdio::piped())
     .stderr(Stdio::piped())
@@ -367,26 +367,24 @@ fn charging(progress_bar: ProgressBar) {
     line_reader
         .for_each(|line| {
             let mut line = from_utf8(line).unwrap().to_owned().trim().to_owned();
+            let Ok(num_watts) = line.parse::<u32>() else {
+                return Ok(false);
+            };
 
-            let re = Regex::new(r"([0-9]+) watts").unwrap();
-            if let Some(captures) = re.captures(&line) {
-                let (_, [num_watts]) = captures.extract();
-                let num_watts: usize = num_watts.parse().unwrap();
-                let colored_msg = if num_watts <= 30 {
-                    format!("🚨 {}", line).red()
-                } else if num_watts < 60 {
-                    format!("⚠️ {}", line).custom_color(CustomColor::new(255, 127, 0))
-                } else if num_watts < 96 {
-                    line.normal()
-                } else if num_watts < 140 {
-                    line.blue()
-                } else if num_watts == 140 {
-                    line.green()
-                } else {
-                    line.normal()
-                };
-                line = format!("{}", colored_msg);
-            }
+            let colored_msg = if num_watts <= 30 {
+                format!("🚨 {} watts", num_watts).red()
+            } else if num_watts < 60 {
+                format!("⚠️ {} watts", num_watts).custom_color(CustomColor::new(255, 127, 0))
+            } else if num_watts < 96 {
+                format!("🔌 {} watts", num_watts).normal()
+            } else if num_watts < 140 {
+                format!("🔌 {} watts", num_watts).blue()
+            } else if num_watts == 140 {
+                format!("🔌 {} watts", num_watts).green()
+            } else {
+                format!("🔌 {} watts", num_watts).purple()
+            };
+            line = format!("{}", colored_msg);
             progress_bar.set_message(line);
             stdout().flush().unwrap();
             Ok(true)
