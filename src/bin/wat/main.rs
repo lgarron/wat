@@ -112,14 +112,14 @@ fn main() {
         );
     }
 
-    if wat_args.network_quality_separately {
+    if wat_args.speedtest_separately {
         for handle in handles.drain(0..) {
             handle.join().unwrap();
         }
     }
 
-    if wat_args.include_network_quality() {
-        spawn!("networkQuality", network_quality);
+    if wat_args.include_speedtest() {
+        spawn!("speedtest", speedtest);
     }
     if wat_args.include_iperf3() {
         spawn_1arg!("Pythagoras.lan iperf3", iperf3, "Pythagoras.lan");
@@ -136,10 +136,10 @@ fn main() {
     }
 }
 
-fn network_quality(progress_bar: ProgressBar) {
+fn speedtest(progress_bar: ProgressBar) {
     // progress_bar.set_prefix("starting");
     let child = Command::new("faketty")
-        .args(["networkQuality"])
+        .args(["speedtest"])
         // .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -148,8 +148,8 @@ fn network_quality(progress_bar: ProgressBar) {
     let mut line_reader = LineReader::with_delimiter(b'\r', child.unwrap().stdout.unwrap());
     line_reader
         .for_each(|line| {
-            let line = from_utf8(line).unwrap().to_owned();
-            if !line.starts_with("Downlink") {
+            let line = from_utf8(line).unwrap().trim().to_owned();
+            if !line.starts_with("Download") {
                 return Ok(true);
             }
             progress_bar.set_message(line);

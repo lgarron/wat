@@ -24,11 +24,11 @@ pub struct WatArgs {
     #[clap(long)]
     pub sshping: bool,
 
-    #[clap(long = "networkQuality")]
-    pub network_quality: bool,
+    #[clap(long)]
+    pub speedtest: bool,
 
-    #[clap(long = "networkQualitySeparately")]
-    pub network_quality_separately: bool,
+    #[clap(long)]
+    pub speedtest_separately: bool,
 
     #[clap(long)]
     pub iperf3: bool,
@@ -59,8 +59,8 @@ impl WatArgs {
     pub fn include_sshping(&self) -> bool {
         self.default || self.sshping
     }
-    pub fn include_network_quality(&self) -> bool {
-        self.default || self.network_quality
+    pub fn include_speedtest(&self) -> bool {
+        self.default || self.speedtest
     }
     pub fn include_iperf3(&self) -> bool {
         self.default || self.iperf3
@@ -73,7 +73,7 @@ impl WatArgs {
             || self.include_ping()
             || self.include_system()
             || self.include_sshping()
-            || self.include_network_quality()
+            || self.include_speedtest()
             || self.include_iperf3()
             || self.include_iperf3_tailscale()
     }
