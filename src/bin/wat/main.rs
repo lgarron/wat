@@ -136,6 +136,8 @@ fn main() {
     }
 }
 
+const DOWNLOAD: &str = "Download:";
+
 fn speedtest(progress_bar: ProgressBar) {
     // progress_bar.set_prefix("starting");
     let child = Command::new("faketty")
@@ -152,7 +154,7 @@ fn speedtest(progress_bar: ProgressBar) {
             if !line.starts_with("Download") {
                 return Ok(true);
             }
-            progress_bar.set_message(line);
+            progress_bar.set_message(line[DOWNLOAD.len()..].trim().to_owned());
             stdout().flush().unwrap();
             Ok(true)
         })
