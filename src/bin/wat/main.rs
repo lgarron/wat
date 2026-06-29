@@ -11,6 +11,7 @@ use std::{
 };
 
 mod args;
+mod tailscale;
 
 use args::get_options;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -18,6 +19,8 @@ use linereader::LineReader;
 use regex::Regex;
 
 use shadow_rs::shadow;
+
+use crate::tailscale::tailscale;
 
 shadow!(build);
 
@@ -316,22 +319,6 @@ fn sshping(progress_bar: ProgressBar, host: &str) {
             Ok(true)
         })
         .unwrap();
-}
-
-fn tailscale(progress_bar: ProgressBar) {
-    let child = Command::new("/Applications/Tailscale.app/Contents/MacOS/Tailscale")
-        .args(["status"])
-        // .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .status();
-
-    progress_bar.set_message(if child.unwrap().code() == Some(0) {
-        "↔️ up"
-    } else {
-        "🚫 down"
-    });
-    stdout().flush().unwrap();
 }
 
 fn ipv4_address(progress_bar: ProgressBar, interfaces: &[&str]) {

@@ -14,6 +14,8 @@ futures = "0.3.30"
 indicatif = { version = "0.17.8", features = ["improved_unicode"] }
 linereader = "0.4.0"
 regex = "1.11.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
 shadow-rs = { version = "1.2.0", default-features = false }
 
 [build-dependencies]
