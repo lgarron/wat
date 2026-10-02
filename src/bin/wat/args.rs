@@ -44,6 +44,9 @@ pub struct WatArgs {
     ///  source <(wat --completions zsh) # zsh
     #[clap(long, verbatim_doc_comment, id = "SHELL")]
     pub completions: Option<Shell>,
+
+    #[clap(long, requires("completions"))]
+    bin_name: Option<String>,
 }
 
 impl WatArgs {
@@ -79,8 +82,17 @@ impl WatArgs {
     }
 }
 
-fn completions_for_shell(cmd: &mut clap::Command, generator: impl Generator) {
-    generate(generator, cmd, "wat", &mut stdout());
+fn completions_for_shell(
+    cmd: &mut clap::Command,
+    generator: impl Generator,
+    bin_name: Option<String>,
+) {
+    generate(
+        generator,
+        cmd,
+        bin_name.unwrap_or_else(|| cmd.get_name().to_owned()),
+        &mut stdout(),
+    );
 }
 
 pub fn get_options() -> WatArgs {
@@ -88,7 +100,7 @@ pub fn get_options() -> WatArgs {
 
     let mut args = WatArgs::parse();
     if let Some(shell) = args.completions {
-        completions_for_shell(&mut command, shell);
+        completions_for_shell(&mut command, shell, args.bin_name);
         exit(0);
     }
 
