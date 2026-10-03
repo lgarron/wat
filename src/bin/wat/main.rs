@@ -75,7 +75,7 @@ fn main() {
         spawn_1arg!(
             "IPv4 address (other)",
             ipv4_address,
-            &["en17", "en23", "bridge0"]
+            &["en17", "en23", "bridge0", "en9"]
         );
         spawn!("tailscale", tailscale);
     }
